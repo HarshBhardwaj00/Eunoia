@@ -2,12 +2,11 @@ import 'dart:convert';
 import 'package:google_generative_ai/google_generative_ai.dart';
 
 class AIAnalysisService {
+  static const String geminiApiKey = String.fromEnvironment('GEMINI_API_KEY');
   late final GenerativeModel _model;
 
-  AIAnalysisService({
-    String apiKey = 'AQ.Ab8RN6KhAd7QsCy5knMrekwxkDrYEcvs11n-GFWYtXcmtzp-Lw',
-  }) {
-    _model = GenerativeModel(model: 'gemini-3.5-flash', apiKey: apiKey);
+  AIAnalysisService() {
+    _model = GenerativeModel(model: 'gemini-3.5-flash', apiKey: geminiApiKey);
   }
 
   Future<Map<String, dynamic>> analyzeJournal(String content) async {
