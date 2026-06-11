@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Community posts collection - enforces anonymity
+    match /community_posts/{postId} {
+      
+      // Allow read for authenticated users
+      allow read: if request.auth != null;
+      
+      // Allow create/update with strict validation to prevent UID leaks
+      allow create, update: if request.auth != null 
+        && hasValidPseudonymStructure()
+        && containsNoFirebaseUID();
+    }
+    
+    // User journals collection - encrypted client-side, no raw data
+    match /user_journals/{journalId} {
+      allow read, write: if request.auth != null 
+        && request.resource.data.userId == request.auth.uid;
+    }
+  }
+}
+
+// Helper function to validate pseudonym structure
+// Ensures the pseudonym follows the pattern: "Adjective Animal Number"
+function hasValidPseudonymStructure() {
+  return request.resource.data.pseudonym is string
+    && request.resource.data.pseudonym.matches('^[A-Z][a-z]+ [A-Z][a-z]+ [0-9]+$')
+    && !request.resource.data.pseudonym.contains('uid')
+    && !request.resource.data.pseudonym.contains('UID');
+}
+
+// Helper function to detect Firebase UID patterns
+// Rejects any document containing fields that look like Firebase UIDs
+function containsNoFirebaseUID() {
+  // Check for common Firebase UID patterns (28 characters, alphanumeric)
+  // Firebase UIDs are typically 28 characters and contain only alphanumeric chars
+  return !hasUIDPattern(request.resource.data)
+    && !hasUIDPatternInNestedFields(request.resource.data);
+}
+
+// Check if any field value matches Firebase UID pattern
+function hasUIDPattern(data) {
+  return data.keys().toMap().values().any(value =>
+    value is string 
+    && value.matches('^[a-zA-Z0-9]{28}$')
+    && !value.matches('^[A-Z][a-z]+ [A-Z][a-z]+ [0-9]+$') // Exclude valid pseudonyms
+  );
+}
+
+// Recursively check nested objects for UID patterns
+function hasUIDPatternInNestedFields(data) {
+  return data.keys().toMap().values().any(value =>
+    value is string && value.matches('^[a-zA-Z0-9]{28}$')
+    || value is map && hasUIDPatternInNestedFields(value)
+  );
+}
+
+// Additional validation: reject documents with explicit UID field names
+function hasNoExplicitUIDFields() {
+  return !request.resource.data.keys().toMap().keys().any(key =>
+    key == 'uid' 
+    || key == 'userId' 
+    || key == 'firebaseUid' 
+    || key == 'authUid'
+    || key == 'user_id'
+    || key == 'firebase_uid'
+    || key == 'auth_uid'
+  );
+}

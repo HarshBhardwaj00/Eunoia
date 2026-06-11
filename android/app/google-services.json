@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "180139495476",
+    "project_id": "eunoia-3b894",
+    "storage_bucket": "eunoia-3b894.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:180139495476:android:673e80ff720a258c767a61",
+        "android_client_info": {
+          "package_name": "com.example.demoapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkkjYDUCNHShnnEjbNORVTmgejYzX3Vgo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
