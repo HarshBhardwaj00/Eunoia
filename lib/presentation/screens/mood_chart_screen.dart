@@ -54,19 +54,46 @@ class _MoodChartScreenState extends State<MoodChartScreen> {
   List<FlSpot> _getMoodSpots() {
     if (_moodLogs.isEmpty) return [];
 
-    // Sort logs by timestamp
-    final sortedLogs = List<MoodLog>.from(_moodLogs)
-      ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    final now = DateTime.now();
+    final sevenDaysAgo = now.subtract(const Duration(days: 6));
 
-    // Take last 30 entries for better visualization
-    final recentLogs = sortedLogs.take(30).toList();
-
-    return recentLogs.asMap().entries.map((entry) {
-      final index = entry.key;
-      final log = entry.value;
-      final moodScore = _extractMoodScore(log.encryptedTitle);
-      return FlSpot(index.toDouble(), moodScore.toDouble());
+    // Filter logs from the past 7 days
+    final recentLogs = _moodLogs.where((log) {
+      return log.timestamp.isAfter(sevenDaysAgo) && 
+             log.timestamp.isBefore(now.add(const Duration(days: 1)));
     }).toList();
+
+    // Group entries by calendar date (ignoring time components)
+    final Map<DateTime, List<int>> dailyScores = {};
+    for (final log in recentLogs) {
+      final date = DateTime(log.timestamp.year, log.timestamp.month, log.timestamp.day);
+      final moodScore = _extractMoodScore(log.encryptedTitle);
+      dailyScores.putIfAbsent(date, () => []).add(moodScore);
+    }
+
+    // Generate 7 chronological slots from 6 days ago to today
+    final List<FlSpot> spots = [];
+    for (int i = 0; i < 7; i++) {
+      final targetDate = sevenDaysAgo.add(Duration(days: i));
+      final dateKey = DateTime(targetDate.year, targetDate.month, targetDate.day);
+      
+      if (dailyScores.containsKey(dateKey) && dailyScores[dateKey]!.isNotEmpty) {
+        final scores = dailyScores[dateKey]!;
+        final averageScore = scores.reduce((a, b) => a + b) / scores.length;
+        spots.add(FlSpot(i.toDouble(), averageScore));
+      } else {
+        // No data for this day, skip or use neutral value
+        // Skip to avoid gaps in the line
+      }
+    }
+
+    return spots;
+  }
+
+  DateTime _getDateForIndex(int index) {
+    final now = DateTime.now();
+    final sevenDaysAgo = now.subtract(const Duration(days: 6));
+    return sevenDaysAgo.add(Duration(days: index));
   }
 
   @override
@@ -152,14 +179,15 @@ class _MoodChartScreenState extends State<MoodChartScreen> {
                       color: theme.colorScheme.onSurface,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Text(
-                    'Recent mood entries (1-5 scale)',
+                    'Last 7 Days',
                     style: PremiumDesignSystem.bodyMedium.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.6),
+                      color: theme.colorScheme.primary.withOpacity(0.8),
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
@@ -204,43 +232,77 @@ class _MoodChartScreenState extends State<MoodChartScreen> {
                                 bottomTitles: AxisTitles(
                                   sideTitles: SideTitles(
                                     showTitles: true,
-                                    reservedSize: 40,
+                                    reservedSize: 60,
+                                    interval: 1,
                                     getTitlesWidget: (value, meta) {
-                                      if (value.toInt() % 5 == 0 &&
-                                          value.toInt() < spots.length) {
-                                        return Text(
-                                          '${value.toInt() + 1}',
+                                      final index = value.toInt();
+                                      if (index < 0 || index > 6) {
+                                        return const Text('');
+                                      }
+                                      
+                                      final date = _getDateForIndex(index);
+                                      final now = DateTime.now();
+                                      final isToday = date.year == now.year &&
+                                          date.month == now.month &&
+                                          date.day == now.day;
+                                      
+                                      final label = '${date.day}';
+                                      
+                                      return Padding(
+                                        padding: const EdgeInsets.only(top: 8.0),
+                                        child: Text(
+                                          label,
                                           style: PremiumDesignSystem.bodySmall
                                               .copyWith(
-                                                color: theme
-                                                    .colorScheme
-                                                    .onSurface
-                                                    .withOpacity(0.6),
+                                                color: isToday
+                                                    ? theme.colorScheme.primary
+                                                    : theme.colorScheme.onSurface.withOpacity(0.6),
+                                                fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
+                                                fontSize: 10,
                                               ),
-                                        );
-                                      }
-                                      return const Text('');
+                                        ),
+                                      );
                                     },
                                   ),
                                 ),
                                 leftTitles: AxisTitles(
                                   sideTitles: SideTitles(
                                     showTitles: true,
-                                    reservedSize: 40,
+                                    reservedSize: 80,
+                                    interval: 1,
                                     getTitlesWidget: (value, meta) {
                                       if (value >= 1 &&
                                           value <= 5 &&
                                           value == value.toInt()) {
-                                        final moodLabels = {
-                                          1: '😢',
-                                          2: '😔',
-                                          3: '😐',
-                                          4: '🙂',
-                                          5: '😊',
-                                        };
-                                        return Text(
-                                          moodLabels[value.toInt()] ?? '',
-                                          style: const TextStyle(fontSize: 16),
+                                        String moodLabel;
+                                        switch (value.toInt()) {
+                                          case 5:
+                                            moodLabel = 'Great';
+                                            break;
+                                          case 4:
+                                            moodLabel = 'Good';
+                                            break;
+                                          case 3:
+                                            moodLabel = 'Neutral';
+                                            break;
+                                          case 2:
+                                            moodLabel = 'Low';
+                                            break;
+                                          case 1:
+                                            moodLabel = 'Very Low';
+                                            break;
+                                          default:
+                                            moodLabel = '';
+                                        }
+                                        return Padding(
+                                          padding: const EdgeInsets.only(right: 8.0),
+                                          child: Text(
+                                            moodLabel,
+                                            style: PremiumDesignSystem.bodySmall.copyWith(
+                                              color: theme.colorScheme.onSurface.withOpacity(0.6),
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
                                         );
                                       }
                                       return const Text('');
@@ -249,20 +311,12 @@ class _MoodChartScreenState extends State<MoodChartScreen> {
                                 ),
                               ),
                               borderData: FlBorderData(
-                                show: true,
-                                border: Border.all(
-                                  color: theme.colorScheme.outline.withOpacity(
-                                    0.3,
-                                  ),
-                                ),
+                                show: false,
                               ),
                               minX: 0,
-                              maxX: (spots.length - 1).toDouble().clamp(
-                                0,
-                                double.infinity,
-                              ),
-                              minY: 0,
-                              maxY: 6,
+                              maxX: 6,
+                              minY: 1,
+                              maxY: 5,
                               lineBarsData: [
                                 LineChartBarData(
                                   spots: spots,
@@ -316,7 +370,7 @@ class _MoodChartScreenState extends State<MoodChartScreen> {
                       const SizedBox(width: 16),
                       // X-axis label
                       Text(
-                        'Entry #',
+                        'Date',
                         style: PremiumDesignSystem.bodySmall.copyWith(
                           fontWeight: FontWeight.bold,
                           color: theme.colorScheme.onSurface.withOpacity(0.6),
@@ -324,71 +378,24 @@ class _MoodChartScreenState extends State<MoodChartScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 32),
-                  _buildMoodLegend(context),
+                  const SizedBox(height: 24),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Text(
+                      'Showing your normalized mental wellness index over the last 7 calendar days.',
+                      style: PremiumDesignSystem.bodySmall.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.5),
+                        fontStyle: FontStyle.italic,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildMoodLegend(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return PremiumCard(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Mood Scale',
-              style: PremiumDesignSystem.label.copyWith(
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Expanded(child: _buildLegendItem(context, '😢', 'Terrible', 1)),
-                Expanded(child: _buildLegendItem(context, '😔', 'Bad', 2)),
-                Expanded(child: _buildLegendItem(context, '😐', 'Okay', 3)),
-                Expanded(child: _buildLegendItem(context, '🙂', 'Good', 4)),
-                Expanded(child: _buildLegendItem(context, '😊', 'Great', 5)),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLegendItem(
-    BuildContext context,
-    String emoji,
-    String label,
-    int value,
-  ) {
-    final theme = Theme.of(context);
-
-    return Column(
-      children: [
-        Text(emoji, style: const TextStyle(fontSize: 24)),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11.0,
-            color: theme.colorScheme.onSurface.withOpacity(0.5),
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
     );
   }
 }

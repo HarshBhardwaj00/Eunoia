@@ -1,27 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../services/journal_repository.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/ai_analysis_service.dart';
 import '../../data/models/mood_log_model.dart';
 import '../../theme/premium_design_system.dart';
 import '../../widgets/premium_card.dart';
 import '../../widgets/premium_button.dart';
+import '../../providers/app_providers.dart';
 
 // Mood logging screen - captures daily mood, sleep, and journal entries
-class MoodLoggerScreen extends StatefulWidget {
+class MoodLoggerScreen extends ConsumerStatefulWidget {
   const MoodLoggerScreen({super.key});
 
   @override
-  State<MoodLoggerScreen> createState() => _MoodLoggerScreenState();
+  ConsumerState<MoodLoggerScreen> createState() => _MoodLoggerScreenState();
 }
 
-class _MoodLoggerScreenState extends State<MoodLoggerScreen> {
+class _MoodLoggerScreenState extends ConsumerState<MoodLoggerScreen> {
   int _selectedMood = 3;
   double _sleepHours = 7.0;
   final TextEditingController _notesController = TextEditingController();
   bool _isSaving = false;
-
-  late final JournalRepository _repository;
 
   final List<MoodOption> _moodOptions = [
     MoodOption(emoji: '😢', label: 'Terrible', value: 1),
@@ -34,8 +32,6 @@ class _MoodLoggerScreenState extends State<MoodLoggerScreen> {
   @override
   void initState() {
     super.initState();
-    _repository = JournalRepository(FirebaseFirestore.instance);
-    _repository.initialize();
   }
 
   @override
@@ -81,7 +77,8 @@ class _MoodLoggerScreenState extends State<MoodLoggerScreen> {
         summary: analysis['summary'] as String?,
       );
 
-      await _repository.saveMoodLog(moodLog);
+      final repository = ref.read(journalRepositoryProvider);
+      await repository.saveMoodLog(moodLog);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

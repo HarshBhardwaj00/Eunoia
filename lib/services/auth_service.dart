@@ -23,6 +23,21 @@ class AuthService {
     }
   }
 
+  /// Sign up with email and password
+  Future<UserCredential?> signUpWithEmail(String email, String password) async {
+    try {
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return userCredential;
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    } catch (e) {
+      throw Exception('Failed to sign up: $e');
+    }
+  }
+
   /// Sign in anonymously for users who want total privacy
   Future<UserCredential?> signInAnonymously() async {
     try {

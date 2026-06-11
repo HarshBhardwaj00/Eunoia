@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Eunoia (With Gemini Key)",
+      "request": "launch",
+      "type": "dart",
+      "toolArgs": [
+        "--dart-define",
+        "GEMINI_API_KEY=AQ.Ab8RN6JZZyTYAqwLId8X3zx1j61zU1XMCVJ-bChd0bT1LDNIRA"
+      ]
+    }
+  ]
+}

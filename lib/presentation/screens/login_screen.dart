@@ -15,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final _authService = AuthService();
   bool _isLoading = false;
+  bool _isSignup = false;
   String? _errorMessage;
 
   @override
@@ -36,6 +37,30 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       await _authService.signInWithEmail(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+      // Navigation will be handled by the auth state listener in the parent
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString().replaceAll('Exception: ', '');
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _handleSignup() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await _authService.signUpWithEmail(
         _emailController.text.trim(),
         _passwordController.text,
       );
@@ -82,9 +107,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Logo/Title
                   const Icon(Icons.psychology, size: 64, color: Colors.white),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Welcome Back',
-                    style: TextStyle(
+                  Text(
+                    _isSignup ? 'Create Account' : 'Welcome Back',
+                    style: const TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -92,9 +117,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Sign in to continue your journey',
-                    style: TextStyle(fontSize: 16, color: Colors.white70),
+                  Text(
+                    _isSignup ? 'Sign up to start your journey' : 'Sign in to continue your journey',
+                    style: const TextStyle(fontSize: 16, color: Colors.white70),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 48),
@@ -237,9 +262,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         textAlign: TextAlign.center,
                       ),
                     ),
-                  // Login Button
+                  // Login/Signup Button
                   ElevatedButton(
-                    onPressed: _isLoading ? null : _handleLogin,
+                    onPressed: _isLoading ? null : (_isSignup ? _handleSignup : _handleLogin),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: const Color(0xFF1a1a2e),
@@ -259,9 +284,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                           )
-                        : const Text(
-                            'Login',
-                            style: TextStyle(
+                        : Text(
+                            _isSignup ? 'Sign Up' : 'Login',
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
@@ -297,6 +322,23 @@ class _LoginScreenState extends State<LoginScreen> {
                               fontWeight: FontWeight.w500,
                             ),
                           ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Toggle between Login and Signup
+                  TextButton(
+                    onPressed: _isLoading ? null : () {
+                      setState(() {
+                        _isSignup = !_isSignup;
+                        _errorMessage = null;
+                      });
+                    },
+                    child: Text(
+                      _isSignup ? 'Already have an account? Login' : 'First time? Create account',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.white70,
+                      ),
+                    ),
                   ),
                 ],
               ),

@@ -476,6 +476,12 @@ class ProfileScreen extends ConsumerWidget {
           final authService = ref.read(authServiceProvider);
           try {
             await authService.signOut();
+            if (context.mounted) {
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                '/',
+                (route) => false,
+              );
+            }
           } catch (e) {
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
