@@ -8,7 +8,8 @@
 | **Deliverable** | GitHub Repository Setup |
 | **Industry Mapping** | Collaborative Development |
 | **Project Domain** | HealthCare |
-| **Project Title** | MediCare+ — Doctor Appointment & Patient Record Management System |
+| **Project Title** | Eunoia — Healthcare & Mental Wellness Platform |
+| **GitHub Repository** | https://github.com/HarshBhardwaj00/Eunoia |
 
 ---
 
@@ -138,9 +139,8 @@ git pull                   # fetch + merge latest remote changes
 | `git pull` | Download and merge remote changes |
 | `git branch` / `git checkout -b` | List / create-switch branches |
 
-**Deliverable status:** ✅ Repository initialized locally and connected to GitHub remote;
-first commit contains this session record. *(Remote URL: to be updated with the team's
-actual GitHub organization link.)*
+**Deliverable status:** ✅ Repository initialized locally, connected to GitHub remote
+(`https://github.com/HarshBhardwaj00/Eunoia`), and pushed.
 
 ---
 
@@ -180,7 +180,10 @@ Sprint Review · Retrospective · Product Owner · Scrum Master · Velocity`
 
 ### Selected Domain: HealthCare
 
-**Project title:** *MediCare+ — Doctor Appointment & Patient Record Management System*
+**Project title:** *Eunoia — Healthcare & Mental Wellness Platform*
+(Under the HealthCare domain; hosted at https://github.com/HarshBhardwaj00/Eunoia.
+*"Eunoia" = beautiful thinking — a state of positive mental well-being, which the app
+aims to build through guided wellness and health-tracking features.)
 
 **Why HealthCare?**
 1. **Real social impact** — improves patient access to doctors and reduces manual paperwork in clinics.
@@ -189,23 +192,22 @@ Sprint Review · Retrospective · Product Owner · Scrum Master · Velocity`
 4. **Well-bounded scope for an academic SDP** — a working MVP (appointments + e-records) is achievable in one semester.
 
 **Proposed core features (MVP):**
-- Patient registration & login (role-based access: Patient / Doctor / Admin).
-- Search doctors by specialization & availability; book/cancel appointments.
-- Digital patient records: prescriptions and visit history in one place.
-- Admin dashboard: manage doctors, slots, and reports.
+- User registration & login (role-based access: User / Counsellor / Admin).
+- Daily mood & health tracking dashboard with visual insights.
+- Guided wellness activities: meditation/journaling/self-care checklists.
+- Counsellor connect: book appointments and maintain personal well-being records.
+- Admin dashboard: manage content, users, and engagement reports.
 
 ### Team Formation
 
 | Role | Member | Responsibility |
 |---|---|---|
-| Team Leader | Member 1 *(fill name)* | Coordination, planning, sprint reviews, final QA |
-| Backend Developer | Member 2 *(fill name)* | APIs, database, authentication |
-| Frontend Developer | Member 3 *(fill name)* | UI/UX, responsive pages, integration |
-| Backend / Testing | Member 4 *(fill name)* | Test cases, bug tracking, documentation |
-| DevOps / Docs | Member 5 *(fill name)* | Git workflows, deployment, README/reports |
+| Team Leader | Harsh Bhardwaj | Coordination & planning, backend development, Git/GitHub repository admin, reviews |
+| Developer & Docs | Kritagya Jha | Frontend/UI development, testing, documentation & session records |
 
-> **Note:** All team members act as Git collaborators on the shared repository,
-> practicing peer code review through pull requests.
+> **Note:** Both team members act as Git collaborators on the shared repository
+> (https://github.com/HarshBhardwaj00/Eunoia), practicing peer code review
+> through pull requests.
 
 **Collaboration rules adopted (Industry Mapping):**
 - One branch per feature: `feature/<short-name>`; never commit directly to `main`.
@@ -222,8 +224,8 @@ Sprint Review · Retrospective · Product Owner · Scrum Master · Velocity`
 | Git installed and identity configured | ✅ |
 | Local repository initialized (`git init`) | ✅ |
 | Session 1 record file added and committed (`git add` + `git commit`) | ✅ |
-| Remote added and first push performed (`git push -u origin main`) | 🔲 *pending team GitHub org creation* |
-| All team members added as collaborators | 🔲 *after org/repo creation* |
+| Remote added and first push performed (`git push -u origin main`) | ✅ |
+| Team members (Harsh Bhardwaj, Kritagya Jha) added as collaborators | 🔲 *add both accounts on GitHub → Settings → Collaborators* |
 
 ---
 
@@ -233,6 +235,7 @@ In this session we installed and understood Git, initialized a version-controlle
 repository, learned the core version-control commands (`init/status/add/commit/push/pull`),
 studied how the industry runs projects through the software lifecycle and Agile/Scrum,
 formed our team, and selected the **HealthCare** domain for the SDP project
-*MediCare+*. The repository is now the single source of truth for the project — every
+*Eunoia*. The repository (https://github.com/HarshBhardwaj00/Eunoia) is now the
+single source of truth for the project — every
 future session's deliverable will be added to it as a new versioned commit, practicing
 collaborative development exactly as done in the industry.
